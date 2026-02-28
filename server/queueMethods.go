@@ -6,7 +6,7 @@ import (
 	"github.com/valinurovam/garagemq/exchange"
 	"github.com/valinurovam/garagemq/queue"
 )
-
+// foo
 func (channel *Channel) queueRoute(method amqp.Method) *amqp.Error {
 	switch method := method.(type) {
 	case *amqp.QueueDeclare:
@@ -233,7 +233,9 @@ func (channel *Channel) queueDelete(method *amqp.QueueDelete) *amqp.Error {
 	var err *amqp.Error
 
 	if qu, err = channel.getQueueWithError(method.Queue, method); err != nil {
-		return err
+		// Queue not found — behave idempotently like RabbitMQ
+		channel.SendMethod(&amqp.QueueDeleteOk{MessageCount: 0})
+		return nil
 	}
 
 	if err = channel.checkQueueLockWithError(qu, method); err != nil {
